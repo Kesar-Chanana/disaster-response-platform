@@ -8,13 +8,17 @@ const { reportsRouter } = require('./routes/reports');
 const { geocodeRouter } = require('./routes/geocode');
 const { verifyImageRouter } = require('./routes/verify');
 const { socialMediaRouter } = require('./routes/socialMedia');
+const { resourceRouter } = require('./routes/resources');
+const { updatesRouter } = require('./routes/updates');
+
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
-
+app.use('/disasters', resourceRouter);
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/disasters', updatesRouter);
 
 app.use('/disasters', disastersRouter(io));
 app.use('/reports', reportsRouter(io));

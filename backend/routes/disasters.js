@@ -1,20 +1,68 @@
 const express = require('express');
 const router = express.Router();
+const supabase = require('../supabaseClient'); // Adjust path if needed
 
 function disastersRouter(io) {
-  const disasters = []; // in-memory for simplicity
+  // POST /disasters → create a new disaster
+  router.post('/', async (req, res) => {
+    const {
+      title,
+      location_name,
+      description,
+      tags,
+      lat = 40.7128,
+      lon = -74.0060
+    } = req.body;
 
-  router.post('/', (req, res) => {
-    const newDisaster = { id: disasters.length + 1, ...req.body };
-    disasters.push(newDisaster);
-    io.emit('disaster_updated', newDisaster);
-    res.status(201).json(newDisaster);
+    const newDisaster = {
+      title,
+      location_name,
+      description,
+      tags,
+      owner_id: 'netrunnerX',
+      location: `POINT(${lon} ${lat})`, // Supabase expects "POINT(lon lat)"
+      audit_trail: [{
+        action: 'create',
+        user_id: 'netrunnerX',
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    const { data, error } = await supabase
+      .from('disasters')
+      .insert(newDisaster)
+      .select();
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return res.status(500).json({ error: 'Failed to create disaster' });
+    }
+
+    io.emit('disaster_updated', data[0]);
+    res.status(201).json(data[0]);
   });
 
-  router.get('/', (req, res) => {
+  // GET /disasters?tag=flood → fetch disasters, optionally filter by tag
+  router.get('/', async (req, res) => {
     const { tag } = req.query;
-    const result = tag ? disasters.filter(d => d.tags.includes(tag)) : disasters;
-    res.json(result);
+
+    let query = supabase
+      .from('disasters')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (tag) {
+      query = query.contains('tags', [tag]);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Supabase fetch error:', error);
+      return res.status(500).json({ error: 'Failed to fetch disasters' });
+    }
+
+    res.json(data);
   });
 
   return router;
