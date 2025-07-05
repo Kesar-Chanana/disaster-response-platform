@@ -11,9 +11,12 @@ router.get('/:id/official-updates', async (req, res) => {
     const updates = [];
 
     $('article h3 a').slice(0, 5).each((i, el) => {
+      const href = $(el).attr('href').trim();
+      const fullUrl = href.startsWith('/') ? `https://reliefweb.int${href}` : href;
+
       updates.push({
         title: $(el).text().trim(),
-        url: 'https://reliefweb.int' + $(el).attr('href')
+        url: fullUrl
       });
     });
 

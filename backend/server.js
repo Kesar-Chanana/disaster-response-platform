@@ -25,7 +25,9 @@ app.use('/disasters', disastersRouter(io));
 app.use('/reports', reportsRouter(io));
 app.use('/geocode', geocodeRouter);
 app.use('/verify-image', verifyImageRouter);
-app.use('/social-media', socialMediaRouter(io));
+app.use('/disasters', socialMediaRouter(io));
+
+
 
 app.get('/', (req, res) => res.send('Disaster Response API Running'));
 

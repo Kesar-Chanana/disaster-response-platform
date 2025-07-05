@@ -20,7 +20,7 @@ function disastersRouter(io) {
       description,
       tags,
       owner_id: 'netrunnerX',
-      location: `POINT(${lon} ${lat})`, // Supabase expects "POINT(lon lat)"
+      location: `POINT(${lon} ${lat})`,
       audit_trail: [{
         action: 'create',
         user_id: 'netrunnerX',
@@ -73,17 +73,18 @@ function disastersRouter(io) {
       location_name,
       description,
       tags,
-      lat = 40.7128,
-      lon = -74.0060
+      lat,
+      lon
     } = req.body;
 
-    const updates = {
-      title,
-      location_name,
-      description,
-      tags,
-      location: `POINT(${lon} ${lat})`
-    };
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (location_name !== undefined) updates.location_name = location_name;
+    if (description !== undefined) updates.description = description;
+    if (tags !== undefined) updates.tags = tags;
+    if (lat !== undefined && lon !== undefined) {
+      updates.location = `POINT(${lon} ${lat})`;
+    }
 
     // Get existing audit trail
     const { data: existing, error: fetchError } = await supabase
@@ -125,7 +126,6 @@ function disastersRouter(io) {
   router.delete('/:id', async (req, res) => {
     const { id } = req.params;
 
-    // Optionally fetch disaster before deleting (for logging)
     const { data: existing, error: fetchError } = await supabase
       .from('disasters')
       .select('*')
