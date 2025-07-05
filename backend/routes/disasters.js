@@ -65,6 +65,92 @@ function disastersRouter(io) {
     res.json(data);
   });
 
+  // PUT /disasters/:id → update disaster
+  router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const {
+      title,
+      location_name,
+      description,
+      tags,
+      lat = 40.7128,
+      lon = -74.0060
+    } = req.body;
+
+    const updates = {
+      title,
+      location_name,
+      description,
+      tags,
+      location: `POINT(${lon} ${lat})`
+    };
+
+    // Get existing audit trail
+    const { data: existing, error: fetchError } = await supabase
+      .from('disasters')
+      .select('audit_trail')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.error('Fetch error:', fetchError);
+      return res.status(500).json({ error: 'Failed to fetch disaster for update' });
+    }
+
+    const newTrail = existing.audit_trail || [];
+    newTrail.push({
+      action: 'update',
+      user_id: 'netrunnerX',
+      timestamp: new Date().toISOString()
+    });
+
+    updates.audit_trail = newTrail;
+
+    const { data, error } = await supabase
+      .from('disasters')
+      .update(updates)
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('Update error:', error);
+      return res.status(500).json({ error: 'Failed to update disaster' });
+    }
+
+    io.emit('disaster_updated', data[0]);
+    res.json(data[0]);
+  });
+
+  // DELETE /disasters/:id → delete disaster
+  router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    // Optionally fetch disaster before deleting (for logging)
+    const { data: existing, error: fetchError } = await supabase
+      .from('disasters')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.error('Fetch error before delete:', fetchError);
+      return res.status(404).json({ error: 'Disaster not found' });
+    }
+
+    const { error } = await supabase
+      .from('disasters')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Delete error:', error);
+      return res.status(500).json({ error: 'Failed to delete disaster' });
+    }
+
+    io.emit('disaster_updated', { deleted_id: id });
+    res.json({ message: 'Disaster deleted successfully' });
+  });
+
   return router;
 }
 

@@ -11,6 +11,8 @@ const { socialMediaRouter } = require('./routes/socialMedia');
 const { resourceRouter } = require('./routes/resources');
 const { updatesRouter } = require('./routes/updates');
 
+const { verifyImageRouter } = require('./routes/verify');
+app.use('/disasters', verifyImageRouter);
 
 const app = express();
 const server = http.createServer(app);
