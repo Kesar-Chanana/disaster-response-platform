@@ -6,7 +6,6 @@ const { Server } = require('socket.io');
 const { disastersRouter } = require('./routes/disasters');
 const { reportsRouter } = require('./routes/reports');
 const { geocodeRouter } = require('./routes/geocode');
-const { verifyImageRouter } = require('./routes/verify');
 const { socialMediaRouter } = require('./routes/socialMedia');
 const { resourceRouter } = require('./routes/resources');
 const { updatesRouter } = require('./routes/updates');
