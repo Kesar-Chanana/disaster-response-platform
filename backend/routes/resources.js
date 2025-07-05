@@ -1,8 +1,10 @@
+require('dotenv').config(); // Load environment variables
+
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
 
-// Replace with your actual values or use .env
+// Initialize Supabase client
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 router.get('/:id/resources', async (req, res) => {
