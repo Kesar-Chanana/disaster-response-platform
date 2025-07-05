@@ -11,7 +11,7 @@ const { resourceRouter } = require('./routes/resources');
 const { updatesRouter } = require('./routes/updates');
 
 const { verifyImageRouter } = require('./routes/verify');
-app.use('/disasters', verifyImageRouter);
+
 
 const app = express();
 const server = http.createServer(app);
@@ -20,7 +20,7 @@ app.use('/disasters', resourceRouter);
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/disasters', updatesRouter);
-
+app.use('/disasters', verifyImageRouter);
 app.use('/disasters', disastersRouter(io));
 app.use('/reports', reportsRouter(io));
 app.use('/geocode', geocodeRouter);
